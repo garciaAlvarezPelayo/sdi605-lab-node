@@ -1,4 +1,4 @@
-module.exports = function(app, swig, mongo) {
+module.exports = function(app, swig, gestorBD) {
     app.get("/canciones", function(req, res) {
         let canciones = [{
             "nombre" : "Black space",
@@ -44,22 +44,14 @@ module.exports = function(app, swig, mongo) {
             precio : req.body.precio
         }
 
-        mongo.MongoClient.connect(app.get('db'), function(err, db) {
-            if (err) {
-                res.send("Error de conexión: " + err);
+        // Conectarse
+        gestorBD.insertarCancion(cancion, function(id){
+            if (id == null) {
+                res.send("Error al insertar canción");
             } else {
-                let collection = db.collection('canciones');
-                collection.insert(cancion, function(err, result) {
-                    if (err) {
-                        res.send("Error al insertar " + err);
-                    } else {
-                        res.send("Agregada id: "+ result.ops[0]._id);
-                    }
-                    db.close();
-                });
+                res.send("Agregada la canción ID: " + id);
             }
         });
-
     })
 
     app.get('/promo*', function (req, res) {
