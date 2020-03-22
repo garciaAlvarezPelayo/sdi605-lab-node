@@ -1,4 +1,4 @@
-module.exports = function(app, swig, gestorBD) {
+module.exports = function(app, swig) {
     app.get("/autores", function(req, res) {
         let autores = [{
             "nombre" : "alguien1",
