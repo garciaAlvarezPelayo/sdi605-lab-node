@@ -17,6 +17,32 @@
 		  </div>
 		</div>
 	  </div>
+<div class="row">
+	<div class="media col-xs-10">
+		{% for comentario in comentarios %}
+		<div class="media-body">
+			<h2>{{ comentario.autor }}</h2>
+			<p>{{ comentario.texto }}</p>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+
+<h2>Agregar comentario</h2>
+<form class="form-horizontal" method="post" action="/comentarios/{{ cancion._id.toString() }}">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="texto">Texto:</label>
+		<div class="col-sm-10">
+			<input type="text" class="form-control" name="texto"
+				   placeholder="Texto del comentario" required="true"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-primary">Agregar</button>
+		</div>
+	</div>
+</form>
 	  
 	 <!-- -->
 	 <div class="row" style="margin-top: 20px;" >
