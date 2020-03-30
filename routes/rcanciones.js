@@ -291,7 +291,9 @@ module.exports = function(app, swig, gestorBD) {
                             }
                         }
                         if(owner){
-                            res.send("Ya eres propietario");
+                            res.redirect("/error" +
+                                "?mensaje=ya eres propietario"+
+                                "&tipoMensaje=alert-danger ");
                         } else {
                             gestorBD.insertarCompra(compra, function (idCompra) {
                                 if (idCompra == null) {

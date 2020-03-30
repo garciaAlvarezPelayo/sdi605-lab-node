@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block titulo %} Error {% endblock %}
+
+{% block contenido_principal %}
+<script>
+    var mensaje = getUrlParameter('mensaje');
+    var tipoMensaje = getUrlParameter('tipoMensaje');
+    if ( mensaje != ""){
+        if (tipoMensaje == "" ){
+            tipoMensaje = 'alert-info';
+        }
+        $( ".container" )
+            .append("<div class='alert "+tipoMensaje+"'>"+mensaje+" </div>");
+    }
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' :
+            decodeURIComponent(results[1].replace(/\+/g, ' '));
+    };
+</script>
+{% endblock %}

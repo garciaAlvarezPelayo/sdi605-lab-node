@@ -108,6 +108,10 @@ require("./routes/rautores.js")(app, swig); // (app, param1, param2, etc.)
 app.get('/', function (req, res) {
     res.redirect('/tienda');
 })
+app.get("/error", function(req, res) {
+    let respuesta = swig.renderFile('views/error.html', {});
+    res.send(respuesta);
+});
 app.use(function (err, req, res, next) {
     console.log("Error producido: " + err);
     if(!res.headersSent){
