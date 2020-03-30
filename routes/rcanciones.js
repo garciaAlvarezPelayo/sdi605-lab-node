@@ -36,6 +36,7 @@ module.exports = function(app, swig, gestorBD) {
     });
 
     app.get('/cancion/:id', function (req, res) {
+        let owner = false
         let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
         gestorBD.obtenerCanciones(criterio,function(canciones){
             if ( canciones == null ){
@@ -46,12 +47,30 @@ module.exports = function(app, swig, gestorBD) {
                     if (comentarios == null) {
                         res.send(respuesta);
                     } else {
-                        let respuesta = swig.renderFile('views/bcancion.html',
-                            {
-                                comentarios : comentarios,
-                                cancion : canciones[0]
-                            });
-                        res.send(respuesta);
+                        let criterio = {"usuario" : req.session.usuario};
+
+                        gestorBD.obtenerCompras(criterio, function (compras) {
+                            if(compras==null){
+                                res.send("Error al listar");
+                            } else{
+                                console.log(compras)
+                                console.log(gestorBD.mongo.ObjectID(req.params.id))
+                                if(canciones[0].autor==req.session.usuario)
+                                    owner = true;
+                                for (i=0; i<compras.length; i++){
+                                    if(compras[i].cancionId.toString()==gestorBD.mongo.ObjectID(req.params.id).toString()){
+                                        owner = true;
+                                    }
+                                }
+                                let respuesta = swig.renderFile('views/bcancion.html',
+                                    {
+                                        comentarios : comentarios,
+                                        cancion : canciones[0],
+                                        esPropietario : owner
+                                    });
+                                res.send(respuesta);
+                            }
+                        })
                     }
                 })
             }
@@ -74,7 +93,7 @@ module.exports = function(app, swig, gestorBD) {
             nombre : req.body.nombre,
             genero : req.body.genero,
             precio : req.body.precio,
-            autor: req.session.usuario
+            autor : req.session.usuario
         }
 
         // Conectarse
@@ -246,15 +265,44 @@ module.exports = function(app, swig, gestorBD) {
 
     app.get('/cancion/comprar/:id', function (req, res) {
         let cancionId = gestorBD.mongo.ObjectID(req.params.id);
+        let owner = false;
         let compra = {
-            usuario : req.session.usuario,
-            cancionId : cancionId
+            usuario: req.session.usuario,
+            cancionId: cancionId
         }
-        gestorBD.insertarCompra(compra ,function(idCompra){
-            if ( idCompra == null ){
+        let criterio = {"_id": gestorBD.mongo.ObjectID(req.params.id)};
+        gestorBD.obtenerCanciones(criterio, function (canciones) {
+            if (canciones == null) {
                 res.send(respuesta);
             } else {
-                res.redirect("/compras");
+                let criterio = {"usuario": req.session.usuario};
+
+                gestorBD.obtenerCompras(criterio, function (compras) {
+                    if (compras == null) {
+                        res.send("Error al listar");
+                    } else {
+                        console.log(compras)
+                        console.log(gestorBD.mongo.ObjectID(req.params.id))
+                        if (canciones[0].autor == req.session.usuario)
+                            owner = true;
+                        for (i = 0; i < compras.length; i++) {
+                            if (compras[i].cancionId.toString() == gestorBD.mongo.ObjectID(req.params.id).toString()) {
+                                owner = true;
+                            }
+                        }
+                        if(owner){
+                            res.send("Ya eres propietario");
+                        } else {
+                            gestorBD.insertarCompra(compra, function (idCompra) {
+                                if (idCompra == null) {
+                                    res.send(respuesta);
+                                } else {
+                                    res.redirect("/compras");
+                                }
+                            });
+                        }
+                    }
+                });
             }
         });
     });
