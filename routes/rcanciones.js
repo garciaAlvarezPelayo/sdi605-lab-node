@@ -47,29 +47,44 @@ module.exports = function(app, swig, gestorBD) {
                     if (comentarios == null) {
                         res.send(respuesta);
                     } else {
-                        let criterio = {"usuario" : req.session.usuario};
-
-                        gestorBD.obtenerCompras(criterio, function (compras) {
-                            if(compras==null){
-                                res.send("Error al listar");
-                            } else{
-                                console.log(compras)
-                                console.log(gestorBD.mongo.ObjectID(req.params.id))
-                                if(canciones[0].autor==req.session.usuario)
-                                    owner = true;
-                                for (i=0; i<compras.length; i++){
-                                    if(compras[i].cancionId.toString()==gestorBD.mongo.ObjectID(req.params.id).toString()){
-                                        owner = true;
-                                    }
-                                }
-                                let respuesta = swig.renderFile('views/bcancion.html',
-                                    {
-                                        comentarios : comentarios,
-                                        cancion : canciones[0],
-                                        esPropietario : owner
-                                    });
-                                res.send(respuesta);
+                        var configuracion = {
+                            url: "https://api.exchangeratesapi.io/latest?base=EUR",
+                            method: "get",
+                            headers: {
+                                "token": "ejemplo",
                             }
+                        }
+                        var rest = app.get("rest");
+                        rest(configuracion, function (error, response, body) {
+                            console.log("cod: " + response.statusCode + " Cuerpo :" + body);
+                            var objetoRespuesta = JSON.parse(body);
+                            var cambioUSD = objetoRespuesta.rates.USD;
+                            // nuevo campo "usd"
+                            canciones[0].usd = cambioUSD * canciones[0].precio;
+                            let criterio = {"usuario" : req.session.usuario};
+
+                            gestorBD.obtenerCompras(criterio, function (compras) {
+                                if(compras==null){
+                                    res.send("Error al listar");
+                                } else{
+                                    console.log(compras)
+                                    console.log(gestorBD.mongo.ObjectID(req.params.id))
+                                    if(canciones[0].autor==req.session.usuario)
+                                        owner = true;
+                                    for (i=0; i<compras.length; i++){
+                                        if(compras[i].cancionId.toString()==gestorBD.mongo.ObjectID(req.params.id).toString()){
+                                            owner = true;
+                                        }
+                                    }
+                                    let respuesta = swig.renderFile('views/bcancion.html',
+                                        {
+                                            comentarios : comentarios,
+                                            cancion : canciones[0],
+                                            esPropietario : owner
+                                        });
+                                    res.send(respuesta);
+                                }
+                            })
                         })
                     }
                 })
